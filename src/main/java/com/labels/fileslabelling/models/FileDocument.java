@@ -2,22 +2,73 @@ package com.labels.fileslabelling.models;
 
 import com.azure.spring.data.cosmos.core.mapping.Container;
 import org.springframework.data.annotation.Id;
-
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Représente un document stocké, avec ses métadonnées et
+ * les résultats bruts de l’analyse (pages, paires clé-valeur, tables).
+ *
+ * Chaque FileDocument contient :
+ * 
+ *   Un identifiant unique (id) pour la base Cosmos DB.
+ *   Le nom de fichier original et l’URL Azure Blob pour y accéder.
+ *   La date de téléversement, pour suivre l’historique des imports.
+ *   Le statut du document (« IN_REVIEW » ou « APPROVED »).
+ *   La liste des pages analysées (pages), avec chaque mot extrait, son orientation, etc.
+ *   Les paires clé-valeur détectées (keyValuePairs), pour extraire les données structurées.
+ *   Les tables identifiées (tables), avec leurs cellules détaillées.
+ * 
+ */
 @Container(containerName = "files")
 public class FileDocument {
+
+    /**
+     * Identifiant unique généré par Cosmos DB.
+     */
     @Id
     private String id;
-    private String fileName;
-    private String azureUrl;
-    private Date uploadedAt;
-    private String status; // IN_REVIEW or APPROVED
-    
 
-    // NEW: Raw pages from DocumentIntelligence
+    /**
+     * Nom original du fichier uploadé.
+     */
+    private String fileName;
+
+    /**
+     * URL Azure Blob Storage pointant vers le document.
+     */
+    private String azureUrl;
+
+    /**
+     * Horodatage du téléversement, utilisé pour trier et historiser.
+     */
+    private Date uploadedAt;
+
+    /**
+     * Statut actuel du document dans le workflow de labellisation.
+     * Valeurs possibles : IN_REVIEW, APPROVED.
+     */
+    private String status;
+
+    /**
+     * Pages brutes renvoyées par Document Intelligence,
+     * incluant mots détectés, orientation et dimensions.
+     */
     private List<DocumentPage> pages;
+
+    /**
+     * Paires clé-valeur extraites, chacune avec son texte,
+     * ses coordonnées et ses spans textuels.
+     */
+    private List<KeyValuePair> keyValuePairs;
+
+    /**
+     * Tables reconnues dans le document, avec leurs cellules et
+     * informations de fusion (rowSpan, colSpan).
+     */
+    private List<DocumentTable> tables;
+
+    // ————————————————————— Getter & Setter —————————————————————
 
     public String getId() {
         return id;
@@ -82,13 +133,4 @@ public class FileDocument {
     public void setTables(List<DocumentTable> tables) {
         this.tables = tables;
     }
-
-    // NEW: Key/Value pairs
-    private List<KeyValuePair> keyValuePairs;
-
-    // NEW: Tables with every cell
-    private List<DocumentTable> tables;
-
-    // getters & setters omitted for brevity...
-    // (just generate for all seven fields above)
 }
